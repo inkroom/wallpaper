@@ -1,0 +1,48 @@
+{
+    "name": "wallpaper",
+    "version": "1.1.0",
+    "description": "deepin自动换壁纸",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron .",
+        "builder-deb": "electron-builder --linux --x64",
+        "install-deb": "electron-installer-debian --src ../out/wallpaper-linux-x64 --arch amd64 --dest ../out --config deb.json",
+        "pack-linux": "electron-packager . wallpaper --platform=linux --out ../out --arch=x64 --app-version=0.0.1  --overwrite --icon=assets/img/logo/logo.png "
+    },
+    "build": {
+        "productName": "壁纸切换",
+        "appId": "com.inkroom.tool.ink_big",
+        "copyright": "墨盒",
+        "directories": {
+            "output": "build"
+        },
+        "asar": true,
+        "files": [
+            "assets/**/*"
+        ],
+        "linux": {
+            "target": [
+                {
+                    "target": "deb",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "./assets/img/logo"
+        }
+    },
+    "keywords": [
+        "ink_big"
+    ],
+    "author": "inkbox",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^2.0.15",
+        "electron-builder": "^20.38.4",
+        "electron-installer-debian": "^1.0.1"
+    },
+    "dependencies": {
+        "electron-packager": "^13.0.1"
+    }
+}

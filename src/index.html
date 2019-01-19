@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>壁纸切换</title>
+    <meta charset="utf-8" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+        
+        p,
+        input {
+            border: none;
+            background-color: darkslategray;
+            line-height: 30px;
+            border-radius: 5px;
+        }
+        
+        input[type="button"] {
+            width: 320px;
+            margin: 10px;
+            display: inline-block;
+            text-align: center;
+            background-color: brown
+        }
+        
+        p,
+        input[type="text"] {
+            width: 320px;
+            margin: 10px;
+            height: 30px;
+            padding-left: 4px;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            min-width: 360px;
+            /* padding: 5px; */
+            background-color: rgba(39, 2, 39, 0.589)
+        }
+        
+        body {
+            box-sizing: border-box;
+            padding: 5px;
+        }
+        
+        .row {
+            max-height: 150px;
+            margin: 5px;
+        }
+        
+        .col {
+            height: 100%;
+            display: inline-block;
+            vertical-align: top;
+        }
+        
+        .col li {
+            list-style-type: none;
+            margin: 20px 5px;
+        }
+        
+        .img {
+            width: 200px;
+            height: 150px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="row">
+        <div class="col">
+            <ul>
+                <li>间隔时间(秒)</li>
+                <li>
+                    <input type="number" style="text-align:right;" value="15" name="time">
+                </li>
+                <li>
+                    壁纸所在文件夹
+                </li>
+            </ul>
+        </div>
+        <div class="img col">
+            <img src="../assets/img/default.jpg" alt="当前壁纸" title="当前壁纸">
+        </div>
+    </div>
+    <div>
+        <p onclick="choice(this)">
+
+        </p>
+    </div>
+    <div>
+        <input type="button" value="开始" name="status" onclick="toogle(this)" />
+    </div>
+    <!-- <script src="change.js"></script> -->
+    <script>
+        const {
+            dialog
+        } = require('electron').remote
+
+        // const Chan = require('./change');
+        const chan = require('electron').remote.getGlobal('sharedObject').chan;
+
+
+        document.getElementsByName('status')[0].value = (chan.index === -1 ? '开始' : '停止');
+
+        chan.setStatusListener(function(status) {
+            document.getElementsByName('status')[0].value = status ? '停止' : '开始';
+        });
+        chan.setExchangeListener(function(path) {
+            //获取图片地址
+            var imgDom = document.getElementsByTagName('img')[0];
+
+            var nImg = new Image();
+            nImg.onload = function() {
+                //获取图片真实宽高，进行计算，保证显示最多内容
+                var realWidth = this.width;
+                var realHeight = this.height;
+                //获取父容器宽高
+                var parentWidth = document.getElementsByClassName('img')[0].clientWidth;
+                var parentHeight = document.getElementsByClassName('img')[0].clientHeight;
+
+                //计算
+                if ((realWidth / realHeight) > (parentWidth / parentHeight)) { //更宽，按照高度显示
+                    imgDom.height = parentHeight;
+
+                } else { //更高，按宽度显示
+                    imgDom.width = parentWidth;
+                }
+                imgDom.src = 'file://' + path;
+                imgDom.title = '当前图片：' + path.replace(document.getElementsByTagName('p')[0].innerHTML, '');
+            }
+            nImg.src = "file://" + path;
+        })
+
+        let chooseing = false;
+
+        document.getElementsByTagName('p')[0].innerHTML = chan.dir;
+        document.getElementsByName('time')[0].value = chan.time;
+
+        function choice(dom) {
+            if (!chooseing && chan.index === -1) { //停止状态方可选图片
+                // 向主进程发送消息
+                let _dom = dom;
+                // ipcRenderer.send('open-directory-dialog');
+                dialog.showOpenDialog({
+                    properties: ["openDirectory"],
+                    "defaultPath": "/media/inkbox/media/图片/壁纸"
+                }, function(files) {
+                    if (files) {
+                        _dom.innerHTML = files[0];
+                    }
+                    chooseing = false;
+                })
+                chooseing = true;
+            }
+        }
+
+        function toogle(dom) {
+            if (chan.index !== -1) {
+                chan.stop();
+            } else {
+                chan.dir = document.getElementsByTagName('p')[0].innerHTML;
+                chan.time = document.getElementsByName('time')[0].value;
+                chan.start();
+            }
+        }
+
+        function get() {
+            document.getElementsByTagName('p')[0].innerHTML = chan.dir;
+            //获取时间间隔
+            document.getElementsByName('time')[0].value = chan.time;
+        }
+        get();
+    </script>
+</body>
+
+</html>
