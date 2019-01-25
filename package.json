@@ -7,7 +7,7 @@
         "start": "electron .",
         "builder-deb": "electron-builder --linux --x64",
         "install-deb": "electron-installer-debian --src ../out/wallpaper-linux-x64 --arch amd64 --dest ../out --config deb.json",
-        "pack-linux": "electron-packager . wallpaper --platform=linux --out ../out --arch=x64 --app-version=0.0.1  --overwrite --icon=assets/img/logo/logo.png "
+        "pack-linux": "electron-packager . wallpaper --platform=linux --out ../out --arch=x64 --app-version=2.0  --overwrite --icon=assets/img/logo/logo.png "
     },
     "build": {
         "productName": "壁纸切换",
