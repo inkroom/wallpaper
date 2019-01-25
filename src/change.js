@@ -26,6 +26,8 @@ function getImgs(dir) {
             imgs.push(temp[i]);
         }
     }
+
+    fs.readdir('',)
     return imgs;
 }
 

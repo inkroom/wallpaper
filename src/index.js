@@ -10,6 +10,8 @@ const {
 
 const runtime = require('child_process');
 const path = require('path');
+const fs = require('fs');
+
 
 let win;
 let tray = null;
@@ -22,6 +24,7 @@ function createWindow() {
         height: 290,
         resizable: false,
         title: '壁纸切换',
+        show: false,
         //FIXME: 2.0版本下主窗口icon无法正常显示
         icon: 'assets/img/logo/logo.png'
     });
@@ -59,6 +62,9 @@ function showWindow() {
     }
 }
 
+
+
+
 app.on('window-all-closed', function () {
     if (process.platform !== 'darwin')
         app.quit();
@@ -88,17 +94,24 @@ app.on('ready', function () {
             return;
         }
     }
+
+
+    // let data = readConfig();
+
+
+
+
     //启动壁纸切换
-    const Chan = require('./change');
+    // const Chan = require('./change');
     //启动
-    let chan = new Chan();
-    chan.start();
+    // let chan = new Chan();
+    // chan.start();
     //将该对象交给渲染进程
-    global.sharedObject = {
-        chan: chan
-    }
-
-
+    // global.sharedObject = {
+    //     data: data
+    // }
+    //创建窗口不显示，后台运行
+    createWindow();
 
     let img = nativeImage.createFromPath(path.join(__dirname, '../assets/img/logo/24x24.png'));
     tray = new Tray(img);

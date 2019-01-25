@@ -45,6 +45,7 @@
         }
         
         body {
+            text-align: center;
             box-sizing: border-box;
             padding: 5px;
         }
@@ -81,7 +82,7 @@
             <ul>
                 <li>间隔时间(秒)</li>
                 <li>
-                    <input type="number" style="text-align:right;" value="15" name="time">
+                    <input type="number" style="" value="15" name="time">
                 </li>
                 <li>
                     壁纸所在文件夹
@@ -93,7 +94,7 @@
         </div>
     </div>
     <div>
-        <p onclick="choice(this)">
+        <p onclick="choice(this)" style="display:inline-block;text-align:left">
 
         </p>
     </div>
@@ -105,22 +106,103 @@
         const {
             dialog
         } = require('electron').remote
+        const fs = require('fs');
+        const path = require('path');
+        const runtime = require('child_process');
+        const configPath = path.join(__dirname, 'config.dat'); //配置文件位置
 
-        // const Chan = require('./change');
-        const chan = require('electron').remote.getGlobal('sharedObject').chan;
 
 
-        document.getElementsByName('status')[0].value = (chan.index === -1 ? '开始' : '停止');
+        function readConfig() {
+            fs.closeSync(fs.openSync(configPath, 'a')); //创建文件，防止报错
 
-        chan.setStatusListener(function(status) {
-            document.getElementsByName('status')[0].value = status ? '停止' : '开始';
-        });
-        chan.setExchangeListener(function(path) {
+            let data = fs.readFileSync(configPath, {
+                encoding: 'utf-8'
+            });
+            if (data !== null) {
+                //切分
+                let datas = data.split('&');
+                if (datas !== null && datas.length == 2) {
+                    return {
+                        time: parseInt(datas[0]),
+                        dir: datas[1]
+                    }
+                    // this.time = parseInt(datas[0]);
+                    // this.dir = datas[1];
+                }
+            }
+            return null;
+
+        }
+
+        let index = -1;
+        let imgs = [];
+        //获取参数
+        const data = readConfig();
+        console.log(data);
+        if (data != null) {
+            document.getElementsByTagName('p')[0].innerHTML = data.dir;
+            document.getElementsByName('time')[0].value = data.time;
+            console.log('设置时间')
+            console.log(document.getElementsByName('time')[0].value)
+            readImg(data.dir);
+        }
+
+        function readImg(dir) {
+            var stat = fs.statSync(dir);
+            if (stat.isDirectory()) {
+                //读取图片
+                fs.readdir(dir, function (err, paths) {
+                    if (err) return;
+                    imgs = [];
+                    for (var i = 0; i < paths.length; i++) { //提取图片文件
+                        if (/\.(jpg|jpeg|png|bmp|gif)$/.test(paths[i])) {
+                            imgs.push(paths[i]);
+                        }
+                    }
+                    startExchange();
+                });
+            } else {
+                dialog.showMessageBox({
+                    message: '错误的路径'
+                });
+            }
+        }
+
+        function startExchange() {
+            let dir = document.getElementsByTagName('p')[0].innerHTML
+            let time = document.getElementsByName('time')[0].value
+
+            if (imgs.length >= 2) {
+
+                let dir = document.getElementsByTagName('p')[0].innerHTML
+                let time = document.getElementsByName('time')[0].value
+                fs.writeFileSync(configPath, time + "&" + dir);
+
+                index = setInterval(function () {
+                    let next = imgs[Math.floor(Math.random() * imgs.length)]
+                    let real = (dir + path.sep + next);
+                    //执行
+                    runtime.exec('gsettings set com.deepin.wrap.gnome.desktop.background picture-uri \"' +
+                        real + '\"');
+                    exchangeListener(real);
+                }, parseInt(time) * 1000);
+                document.getElementsByTagName('input')[1].value = '暂停'
+            }
+        }
+
+        function stopExchange() {
+            document.getElementsByTagName('input')[1].value = '开始'
+            clearInterval(index);
+            index = -1;
+        }
+
+        function exchangeListener(path) {
             //获取图片地址
             var imgDom = document.getElementsByTagName('img')[0];
 
             var nImg = new Image();
-            nImg.onload = function() {
+            nImg.onload = function () {
                 //获取图片真实宽高，进行计算，保证显示最多内容
                 var realWidth = this.width;
                 var realHeight = this.height;
@@ -139,23 +221,22 @@
                 imgDom.title = '当前图片：' + path.replace(document.getElementsByTagName('p')[0].innerHTML, '');
             }
             nImg.src = "file://" + path;
-        })
+        }
 
         let chooseing = false;
 
-        document.getElementsByTagName('p')[0].innerHTML = chan.dir;
-        document.getElementsByName('time')[0].value = chan.time;
 
         function choice(dom) {
-            if (!chooseing && chan.index === -1) { //停止状态方可选图片
+            if (!chooseing && index === -1) { //停止状态方可选图片
                 // 向主进程发送消息
                 let _dom = dom;
                 // ipcRenderer.send('open-directory-dialog');
                 dialog.showOpenDialog({
                     properties: ["openDirectory"],
                     "defaultPath": "/media/inkbox/media/图片/壁纸"
-                }, function(files) {
+                }, function (files) {
                     if (files) {
+                        readImg(files[0]);
                         _dom.innerHTML = files[0];
                     }
                     chooseing = false;
@@ -165,21 +246,13 @@
         }
 
         function toogle(dom) {
-            if (chan.index !== -1) {
-                chan.stop();
+            if (index !== -1) {
+                stopExchange();
             } else {
-                chan.dir = document.getElementsByTagName('p')[0].innerHTML;
-                chan.time = document.getElementsByName('time')[0].value;
-                chan.start();
+              
+                startExchange();
             }
         }
-
-        function get() {
-            document.getElementsByTagName('p')[0].innerHTML = chan.dir;
-            //获取时间间隔
-            document.getElementsByName('time')[0].value = chan.time;
-        }
-        get();
     </script>
 </body>
 
