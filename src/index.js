@@ -1,7 +1,6 @@
 const {
     app,
     BrowserWindow,
-    ipcMain,
     dialog,
     Tray,
     Menu,
@@ -11,23 +10,59 @@ const {
 const runtime = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const fse = require('fs-extra');
 
 
 let win;
 let tray = null;
+let single = false;
+let sizeConfig = path.join(__dirname,'size.dat');
+
+function readSize(){
+  
+    try{
+ return size= fse.readJsonSync(sizeConfig);
+    }catch(e){
+        console.log(e);
+    }
+}
+
+function writeSize(size){
+
+   
+    try{
+    
+        fse.writeJson(sizeConfig,size).then(()=>{
+            
+        }).catch((err)=>{
+            console.log(err)
+        });
+    }catch(e){
+        console.log(e);
+    }
+
+
+}
 
 function createWindow() {
 
+
+    let size = readSize();
+
+    size = size || {width:400,height:290};
+
     win = new BrowserWindow({
         // fullscreen: true,
-        width: 400,
-        height: 290,
-        resizable: false,
-        title: '壁纸切换',
+        width: size.width,
+        height: size.height,
+        // resizable: false,
+        title: '壁纸切换-'+app.getVersion(),
         show: false,
         //FIXME: 2.0版本下主窗口icon无法正常显示
         icon: 'assets/img/logo/logo.png'
     });
+
+ 
 
     // win = new BrowserWindow({
     //     width: 800,
@@ -51,6 +86,12 @@ function createWindow() {
         win.hide();
         win.setSkipTaskbar(true);
         event.preventDefault();
+    }).on('resize',function(){
+
+        let size = {width:win.getBounds().width,height:win.getBounds().height};
+
+        writeSize(size);
+        
     })
 }
 
@@ -73,7 +114,14 @@ app.on('window-all-closed', function () {
 
 app.on('ready', function () {
 
-
+if(single){
+ dialog.showMessageBox({
+            title: '程序已在运行',
+            message: '程序已在运行，请不要重复启动'
+        })
+        app.quit()
+        return;
+}
     //判断操作系统
     if (process.platform !== 'linux') {
 
@@ -162,11 +210,10 @@ if (app.requestSingleInstanceLock) { //新版本
     const gotTheLock = app.requestSingleInstanceLock()
 
     if (!gotTheLock) {
-        dialog.showMessageBox({
-            title: '程序已在运行',
-            message: '程序已在运行，请不要重复启动'
-        })
-        app.quit()
+
+        single = true;
+
+       
     } else {
         app.on('second-instance', (event, commandLine, workingDirectory) => {
             // Someone tried to run a second instance, we should focus our window.
