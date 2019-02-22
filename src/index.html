@@ -149,24 +149,31 @@
         }
 
         function readImg(dir) {
-            var stat = fs.statSync(dir);
-            if (stat.isDirectory()) {
-                //读取图片
-                fs.readdir(dir, function (err, paths) {
-                    if (err) return;
-                    imgs = [];
-                    for (var i = 0; i < paths.length; i++) { //提取图片文件
-                        if (/\.(jpg|jpeg|png|bmp|gif)$/.test(paths[i])) {
-                            imgs.push(paths[i]);
+            try {
+                var stat = fs.statSync(dir);
+                if (stat.isDirectory()) {
+                    //读取图片
+                    fs.readdir(dir, function (err, paths) {
+                        if (err) return;
+                        imgs = [];
+                        for (var i = 0; i < paths.length; i++) { //提取图片文件
+                            if (/\.(jpg|jpeg|png|bmp|gif)$/.test(paths[i])) {
+                                imgs.push(paths[i]);
+                            }
                         }
-                    }
-                    startExchange();
-                });
-            } else {
-                dialog.showMessageBox({
-                    message: '错误的路径'
-                });
+                        startExchange();
+                    });
+                } else {
+                    document.getElementsByTagName('p')[0].innerHTML=('错误的路径')
+                    // dialog.showMessageBox({
+                    //     message: '错误的路径'
+                    // });
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementsByTagName('p')[0].innerHTML=('错误的路径')
             }
+
         }
 
         function startExchange() {
@@ -249,7 +256,7 @@
             if (index !== -1) {
                 stopExchange();
             } else {
-              
+
                 startExchange();
             }
         }
