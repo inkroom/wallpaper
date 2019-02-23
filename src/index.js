@@ -51,27 +51,27 @@ function createWindow() {
 
     size = size || {width:400,height:290};
 
-    // win = new BrowserWindow({
-    //     // fullscreen: true,
-    //     width: size.width,
-    //     height: size.height,
-    //     // resizable: false,
-    //     title: '壁纸切换-'+app.getVersion(),
-    //     show: false,
-    //     //FIXME: 2.0版本下主窗口icon无法正常显示
-    //     icon: 'assets/img/logo/logo.png'
-    // });
+    win = new BrowserWindow({
+        // fullscreen: true,
+        width: size.width,
+        height: size.height,
+        // resizable: false,
+        title: '壁纸切换-'+app.getVersion(),
+        show: false,
+        //FIXME: 2.0版本下主窗口icon无法正常显示
+        icon: 'assets/img/logo/logo.png'
+    });
 
  
 
-    win = new BrowserWindow({
-        width: 800,
-        height: 600,
-        resizable: true,
-        title: '壁纸切换',
-        icon: path.join(__dirname, '../assets/img/tray.jpg')
-    })
-    win.webContents.openDevTools()
+    // win = new BrowserWindow({
+    //     width: 800,
+    //     height: 600,
+    //     resizable: true,
+    //     title: '壁纸切换',
+    //     icon: path.join(__dirname, '../assets/img/tray.jpg')
+    // })
+    // win.webContents.openDevTools()
 
 
     win.loadFile("src/index.html");

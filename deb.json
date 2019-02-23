@@ -1,6 +1,6 @@
 {
   "name": "wallpaper",
-  "version": "2.2",
+  "version": "2.2.1",
   "icon":"assets/img/logo/logo.png",
   "iconName":"wal",
   "desktopTemplate":"desktop.ejs",
